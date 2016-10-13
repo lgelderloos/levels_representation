@@ -43,7 +43,7 @@ print
 with open(y_test_file, "rb") as f:
     y_test = pickle.load(f)
 X_test = np.load(x_test_file)
-X_test = scaler.fit_transform(X_test)
+X_test = scaler.transform(X_test)
 y_pred = optimal_C.predict(X_test)
 
 print "Scores on test set:"
