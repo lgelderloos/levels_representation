@@ -30,7 +30,7 @@ model = load(path=modelpath)
 differences = {}
 
 with open('phonemelist.p', 'rb') as f:
-    phonemes = 
+    phonemes = pickle.load(f)
 
 prov = getDataProvider('coco', root = '../reimaginet/')
 sents = list(prov.iterSentences(split=split)) 
