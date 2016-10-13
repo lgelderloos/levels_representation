@@ -89,6 +89,7 @@ def get_metrics(word1, word2, model, alphabet = "orthographic"):
         ipa1 = word1
         ipa2 = word2 
     elif alphabet == "orthographic":
+        #TODO call phon function to remove asterisks
         ipa1 = texttophonemes(word1)
         ipa2 = texttophonemes(word2)
 
