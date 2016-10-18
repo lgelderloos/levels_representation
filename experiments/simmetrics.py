@@ -9,10 +9,10 @@ import numpy as np
 def espeak(words):
     return phon(check_output(["espeak", "-q", "--ipa=3", '-v', 'en', words]).decode('utf-8'))
 
-def clean_phonemes(espeakoutput):
+def only_phonemes(espeakoutput):
     '''
     Takes espeak output as input
-    returns list of phonemes without word boundaries
+    returns list of phonemes WITHOUT word boundaries
     '''
     no_word_stress = espeakoutput.replace("ˈ", "")
     no_stress = no_word_stress.replace("ˌ", "")
@@ -29,8 +29,7 @@ def clean_phonemes(espeakoutput):
 def texttophonemes(text):
     '''
     Takes orthograpic sentence as input
-    returns list of phonemes and boundaries
-    boundaries are indicated by an asterisk 
+    returns list of phonemes WITHOUT word boundaries
     '''
     # remove punctuation and add quotes for espeak
     chars = []
@@ -42,7 +41,7 @@ def texttophonemes(text):
     espeakout = check_output(['espeak', '-q', '--ipa=3', '-v', 'en', espeaktext])
     # strip of newline characters etc
     espeakout = espeakout.strip()
-    phonemelist = clean_phonemes(espeakout)
+    phonemelist = only_phonemes(espeakout)
     return [pho.decode('utf-8') for pho in phonemelist]
 
 def cosine_similarity(array1, array2):
@@ -77,7 +76,7 @@ def levenshtein(source, target):
 
     return previous_row[-1]
 
-# returns levenshtein distance divided by length of longest item
+# returns levenshtein distance divided by length of longer item
 def norm_levenshtein(item1, item2):
     lev = float(levenshtein(item1, item2))
     maxlev = float(max(len(item1), len(item2)))
@@ -89,15 +88,12 @@ def get_metrics(word1, word2, model, alphabet = "orthographic"):
         ipa1 = word1
         ipa2 = word2 
     elif alphabet == "orthographic":
-        #TODO call phon function to remove asterisks
         ipa1 = texttophonemes(word1)
         ipa2 = texttophonemes(word2)
 
     lev = norm_levenshtein(ipa1, ipa2)
-    #act1, act2 = representation(model, [ipa1, ipa2])
     pile1 = pile(model, [ipa1])
     pile2 = pile(model, [ipa2])
-    #print stack[0].shape, stack[1].shape
     cosine_sim_layer_1 = cosine_similarity(pile1[0][-1,0,:], pile2[0][-1,0,:])
     cosine_sim_layer_2 = cosine_similarity(pile1[0][-1,1,:], pile2[0][-1,1,:])
     cosine_sim_last_layer = cosine_similarity(pile1[0][-1,-1,:], pile2[0][-1,-1,:])
@@ -105,9 +101,7 @@ def get_metrics(word1, word2, model, alphabet = "orthographic"):
 
 def get_metrics_wordmodels(word1, word2, model):
     lev = norm_levenshtein(word1, word2)
-    #act1, act2 = representation(model, [ipa1, ipa2])
     rep1 = representation(model, [[word1]])
     rep2 = representation(model, [[word2]])
-    #print stack[0].shape, stack[1].shape
     cosine_sim = cosine_similarity(rep1, rep2)
     return [ cosine_sim, lev ]
